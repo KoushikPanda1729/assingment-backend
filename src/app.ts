@@ -37,7 +37,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), config.uploadDir)))
 
 // Health check
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', env: config.nodeEnv })
+  res.json({ status: 'ok', env: config.nodeEnv, message: 'VidSense backend is running!' })
 })
 
 // API routes
