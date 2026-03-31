@@ -7,7 +7,7 @@ import { authenticate } from '../middleware/auth.middleware'
 import type { RequestHandler } from 'express'
 import type { IUser } from '../models/User'
 import config from '../config/index'
-import jwt from 'jsonwebtoken'
+import { setAuthCookies } from '../utils/cookie'
 
 // Dependency injection wiring
 const userRepo = new UserRepository()
@@ -19,7 +19,17 @@ const router = Router()
 // Email/password routes
 router.post('/register', authController.register)
 router.post('/login', authController.login)
-router.get('/me', authenticate as unknown as RequestHandler, authController.me)
+router.post('/refresh', authController.refresh)
+router.post(
+  '/logout',
+  authenticate as unknown as RequestHandler,
+  authController.logout as unknown as RequestHandler
+)
+router.get(
+  '/me',
+  authenticate as unknown as RequestHandler,
+  authController.me as unknown as RequestHandler
+)
 
 // Google OAuth routes
 router.get(
@@ -33,14 +43,14 @@ router.get(
     session: false,
     failureRedirect: `${config.clientUrl}/login?error=google_failed`,
   }),
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     const user = req.user as IUser
-    const token = jwt.sign({ id: String(user._id), role: user.role }, config.jwtSecret, {
-      expiresIn: config.jwtExpiresIn as jwt.SignOptions['expiresIn'],
-    })
-    // Redirect to frontend with token in query param
+    const tokens = await authService.issueTokensForOAuthUser(user)
+
+    setAuthCookies(res, tokens.accessToken, tokens.refreshToken)
+
     res.redirect(
-      `${config.clientUrl}/auth/callback?token=${token}&id=${String(user._id)}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}`
+      `${config.clientUrl}/auth/callback?id=${String(user._id)}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&role=${user.role}`
     )
   }
 )

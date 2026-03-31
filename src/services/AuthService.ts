@@ -5,6 +5,11 @@ import config from '../config/index'
 import type { UserRole, JwtPayload } from '../types'
 import type { IUser } from '../models/User'
 
+export interface TokenPair {
+  accessToken: string
+  refreshToken: string
+}
+
 export class AuthService {
   constructor(private readonly userRepo: UserRepository) {}
 
@@ -13,42 +18,71 @@ export class AuthService {
     email: string
     password: string
     role: UserRole
-  }): Promise<{ user: Omit<IUser, 'password'>; token: string }> {
+  }): Promise<{ user: IUser; tokens: TokenPair }> {
     const exists = await this.userRepo.existsByEmail(data.email)
-    if (exists) {
-      throw new Error('Email already registered')
-    }
+    if (exists) throw new Error('Email already registered')
 
     const hashedPassword = await bcrypt.hash(data.password, 12)
     const user = await this.userRepo.create({ ...data, password: hashedPassword })
 
-    const token = this.generateToken({ id: String(user._id), role: user.role })
-    return { user, token }
+    const tokens = this.generateTokenPair({ id: String(user._id), role: user.role })
+    await this.userRepo.saveRefreshToken(String(user._id), tokens.refreshToken)
+
+    return { user, tokens }
   }
 
-  async login(email: string, password: string): Promise<{ user: IUser; token: string }> {
+  async login(email: string, password: string): Promise<{ user: IUser; tokens: TokenPair }> {
     const user = await this.userRepo.findByEmail(email)
-    if (!user) {
-      throw new Error('Invalid email or password')
-    }
-
+    if (!user) throw new Error('Invalid email or password')
     if (!user.password) throw new Error('Invalid email or password')
-    const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) {
-      throw new Error('Invalid email or password')
-    }
 
-    const token = this.generateToken({ id: String(user._id), role: user.role })
-    return { user, token }
+    const isMatch = await bcrypt.compare(password, user.password)
+    if (!isMatch) throw new Error('Invalid email or password')
+
+    const tokens = this.generateTokenPair({ id: String(user._id), role: user.role })
+    await this.userRepo.saveRefreshToken(String(user._id), tokens.refreshToken)
+
+    return { user, tokens }
   }
 
-  verifyToken(token: string): JwtPayload {
+  async refresh(refreshToken: string): Promise<{ user: IUser; tokens: TokenPair }> {
+    let payload: JwtPayload
+    try {
+      payload = jwt.verify(refreshToken, config.jwtRefreshSecret) as JwtPayload
+    } catch {
+      throw new Error('Invalid or expired refresh token')
+    }
+
+    const user = await this.userRepo.findByRefreshToken(refreshToken)
+    if (!user) throw new Error('Refresh token not found')
+
+    const tokens = this.generateTokenPair({ id: payload.id, role: payload.role })
+    await this.userRepo.saveRefreshToken(String(user._id), tokens.refreshToken)
+
+    return { user, tokens }
+  }
+
+  async logout(userId: string): Promise<void> {
+    await this.userRepo.clearRefreshToken(userId)
+  }
+
+  async issueTokensForOAuthUser(user: IUser): Promise<TokenPair> {
+    const tokens = this.generateTokenPair({ id: String(user._id), role: user.role })
+    await this.userRepo.saveRefreshToken(String(user._id), tokens.refreshToken)
+    return tokens
+  }
+
+  verifyAccessToken(token: string): JwtPayload {
     return jwt.verify(token, config.jwtSecret) as JwtPayload
   }
 
-  private generateToken(payload: JwtPayload): string {
-    return jwt.sign(payload, config.jwtSecret, {
+  private generateTokenPair(payload: JwtPayload): TokenPair {
+    const accessToken = jwt.sign(payload, config.jwtSecret, {
       expiresIn: config.jwtExpiresIn as jwt.SignOptions['expiresIn'],
     })
+    const refreshToken = jwt.sign(payload, config.jwtRefreshSecret, {
+      expiresIn: config.jwtRefreshExpiresIn as jwt.SignOptions['expiresIn'],
+    })
+    return { accessToken, refreshToken }
   }
 }
