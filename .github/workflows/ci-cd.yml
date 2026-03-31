@@ -52,29 +52,29 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/vidsense-backend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/vidsense-backend:${{ github.sha }}
 
-      - name: Deploy to EC2
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/vidsense-backend:latest
-            docker stop backend || true
-            docker rm backend || true
-            docker run -d \
-              --name backend \
-              -p 5001:5001 \
-              -e NODE_ENV=production \
-              -e PORT=5001 \
-              -e MONGO_URI="${{ secrets.MONGO_URI }}" \
-              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-              -e JWT_REFRESH_SECRET="${{ secrets.JWT_REFRESH_SECRET }}" \
-              -e JWT_EXPIRES_IN=7d \
-              -e JWT_REFRESH_EXPIRES_IN=7d \
-              -e CLIENT_URL="${{ secrets.CLIENT_URL }}" \
-              -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
-              -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-              -e GOOGLE_CALLBACK_URL="${{ secrets.GOOGLE_CALLBACK_URL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/vidsense-backend:latest
+      # - name: Deploy to EC2
+      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      #   uses: appleboy/ssh-action@v1
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ubuntu
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     script: |
+      #       docker pull ${{ secrets.DOCKERHUB_USERNAME }}/vidsense-backend:latest
+      #       docker stop backend || true
+      #       docker rm backend || true
+      #       docker run -d \
+      #         --name backend \
+      #         -p 5001:5001 \
+      #         -e NODE_ENV=production \
+      #         -e PORT=5001 \
+      #         -e MONGO_URI="${{ secrets.MONGO_URI }}" \
+      #         -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+      #         -e JWT_REFRESH_SECRET="${{ secrets.JWT_REFRESH_SECRET }}" \
+      #         -e JWT_EXPIRES_IN=7d \
+      #         -e JWT_REFRESH_EXPIRES_IN=7d \
+      #         -e CLIENT_URL="${{ secrets.CLIENT_URL }}" \
+      #         -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
+      #         -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+      #         -e GOOGLE_CALLBACK_URL="${{ secrets.GOOGLE_CALLBACK_URL }}" \
+      #         ${{ secrets.DOCKERHUB_USERNAME }}/vidsense-backend:latest
