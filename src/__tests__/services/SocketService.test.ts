@@ -65,13 +65,11 @@ describe('getSocketService / initSocketService', () => {
   it('initSocketService should initialize and return service', () => {
     jest.isolateModules(() => {
       jest.mock('socket.io', () => ({
-        Server: jest
-          .fn()
-          .mockImplementation(() => ({
-            on: jest.fn(),
-            to: jest.fn().mockReturnValue({ emit: jest.fn() }),
-            emit: jest.fn(),
-          })),
+        Server: jest.fn().mockImplementation(() => ({
+          on: jest.fn(),
+          to: jest.fn().mockReturnValue({ emit: jest.fn() }),
+          emit: jest.fn(),
+        })),
       }))
       const mod =
         require('../../services/SocketService') as typeof import('../../services/SocketService')
