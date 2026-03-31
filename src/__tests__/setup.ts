@@ -1,0 +1,5 @@
+process.env['JWT_SECRET'] = 'test_secret'
+process.env['JWT_REFRESH_SECRET'] = 'test_refresh_secret'
+process.env['JWT_EXPIRES_IN'] = '15m'
+process.env['JWT_REFRESH_EXPIRES_IN'] = '7d'
+process.env['NODE_ENV'] = 'test'
