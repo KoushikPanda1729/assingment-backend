@@ -67,6 +67,7 @@ jobs:
               --name backend \
               --restart always \
               -p 5001:5001 \
+              -v /home/ubuntu/uploads:/app/uploads \
               -e NODE_ENV=production \
               -e PORT=5001 \
               -e MONGO_URI="${{ secrets.MONGO_URI }}" \
