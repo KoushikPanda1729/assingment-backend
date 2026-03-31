@@ -5,7 +5,7 @@ RUN apk add --no-cache ffmpeg
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --legacy-peer-deps
+RUN HUSKY=0 npm ci --legacy-peer-deps
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -18,7 +18,7 @@ RUN apk add --no-cache ffmpeg
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --omit=dev --legacy-peer-deps
+RUN HUSKY=0 npm ci --omit=dev --legacy-peer-deps
 
 COPY --from=builder /app/dist ./dist
 
