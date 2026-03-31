@@ -10,6 +10,10 @@ export class UserRepository {
     return UserModel.findById(id)
   }
 
+  async findByIdWithPassword(id: string): Promise<IUser | null> {
+    return UserModel.findById(id).select('+password')
+  }
+
   async findAll(): Promise<IUser[]> {
     return UserModel.find().select('-password').sort({ createdAt: -1 })
   }
@@ -26,6 +30,14 @@ export class UserRepository {
 
   async updateRole(id: string, role: UserRole): Promise<IUser | null> {
     return UserModel.findByIdAndUpdate(id, { role }, { new: true }).select('-password')
+  }
+
+  async updateProfile(id: string, data: { name?: string }): Promise<IUser | null> {
+    return UserModel.findByIdAndUpdate(id, data, { new: true }).select('-password')
+  }
+
+  async updatePassword(id: string, hashedPassword: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(id, { password: hashedPassword })
   }
 
   async delete(id: string): Promise<IUser | null> {

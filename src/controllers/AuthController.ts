@@ -125,10 +125,93 @@ export class AuthController {
         res.status(401).json({ success: false, message: 'Unauthorized' })
         return
       }
-      res.status(200).json({ success: true, data: req.user })
+      // Fetch from DB so role changes are reflected immediately
+      const user = await this.authService.findById(req.user.id)
+      if (!user) {
+        res.status(401).json({ success: false, message: 'User not found' })
+        return
+      }
+      res.status(200).json({
+        success: true,
+        data: {
+          id: String(user._id),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          createdAt: user.createdAt,
+        },
+      })
     } catch (error) {
       logger.error('Me error:', error)
       res.status(500).json({ success: false, message: 'Failed to get user' })
+    }
+  }
+
+  updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, message: 'Unauthorized' })
+        return
+      }
+      const { name, email } = req.body as { name?: string; email?: string }
+      if (!name?.trim() && !email?.trim()) {
+        res.status(400).json({ success: false, message: 'Nothing to update' })
+        return
+      }
+      const user = await this.authService.updateProfile(req.user.id, {
+        ...(name?.trim() && { name: name.trim() }),
+        ...(email?.trim() && { email: email.trim() }),
+      })
+      if (!user) {
+        res.status(404).json({ success: false, message: 'User not found' })
+        return
+      }
+      res.status(200).json({
+        success: true,
+        data: {
+          user: {
+            id: String(user._id),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            createdAt: user.createdAt,
+          },
+        },
+      })
+    } catch (error) {
+      logger.error('UpdateProfile error:', error)
+      res.status(500).json({ success: false, message: 'Failed to update profile' })
+    }
+  }
+
+  changePassword = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      if (!req.user) {
+        res.status(401).json({ success: false, message: 'Unauthorized' })
+        return
+      }
+      const { currentPassword, newPassword } = req.body as {
+        currentPassword?: string
+        newPassword?: string
+      }
+      if (!currentPassword || !newPassword) {
+        res.status(400).json({ success: false, message: 'Current and new password are required' })
+        return
+      }
+      if (newPassword.length < 6) {
+        res
+          .status(400)
+          .json({ success: false, message: 'New password must be at least 6 characters' })
+        return
+      }
+      await this.authService.changePassword(req.user.id, currentPassword, newPassword)
+      res.status(200).json({ success: true, message: 'Password changed successfully' })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to change password'
+      logger.error('ChangePassword error:', error)
+      res
+        .status(message === 'Current password is incorrect' ? 400 : 500)
+        .json({ success: false, message })
     }
   }
 

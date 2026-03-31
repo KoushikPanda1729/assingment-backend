@@ -46,9 +46,8 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string): Promise<{ user: IUser; tokens: TokenPair }> {
-    let payload: JwtPayload
     try {
-      payload = jwt.verify(refreshToken, config.jwtRefreshSecret) as JwtPayload
+      jwt.verify(refreshToken, config.jwtRefreshSecret)
     } catch {
       throw new Error('Invalid or expired refresh token')
     }
@@ -56,10 +55,29 @@ export class AuthService {
     const user = await this.userRepo.findByRefreshToken(refreshToken)
     if (!user) throw new Error('Refresh token not found')
 
-    const tokens = this.generateTokenPair({ id: payload.id, role: payload.role })
+    // Use role from DB (not JWT) so role changes take effect on next refresh
+    const tokens = this.generateTokenPair({ id: String(user._id), role: user.role })
     await this.userRepo.saveRefreshToken(String(user._id), tokens.refreshToken)
 
     return { user, tokens }
+  }
+
+  async findById(id: string): Promise<IUser | null> {
+    return this.userRepo.findById(id)
+  }
+
+  async updateProfile(id: string, data: { name?: string }): Promise<IUser | null> {
+    return this.userRepo.updateProfile(id, data)
+  }
+
+  async changePassword(id: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await this.userRepo.findByIdWithPassword(id)
+    if (!user) throw new Error('User not found')
+    if (!user.password) throw new Error('Cannot change password for OAuth accounts')
+    const isMatch = await bcrypt.compare(currentPassword, user.password)
+    if (!isMatch) throw new Error('Current password is incorrect')
+    const hashed = await bcrypt.hash(newPassword, 12)
+    await this.userRepo.updatePassword(id, hashed)
   }
 
   async logout(userId: string): Promise<void> {

@@ -30,6 +30,16 @@ router.get(
   authenticate as unknown as RequestHandler,
   authController.me as unknown as RequestHandler
 )
+router.patch(
+  '/me',
+  authenticate as unknown as RequestHandler,
+  authController.updateProfile as unknown as RequestHandler
+)
+router.post(
+  '/change-password',
+  authenticate as unknown as RequestHandler,
+  authController.changePassword as unknown as RequestHandler
+)
 
 // Google OAuth routes
 router.get(

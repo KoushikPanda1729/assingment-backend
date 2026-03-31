@@ -6,6 +6,8 @@ import path from 'path'
 import config from './config/index'
 import passport from './config/passport'
 import authRoutes from './routes/auth.routes'
+import videoRoutes from './routes/video.routes'
+import userRoutes from './routes/user.routes'
 
 const app = express()
 
@@ -15,6 +17,8 @@ app.use(
   cors({
     origin: config.clientUrl,
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'Range'],
+    exposedHeaders: ['Content-Range', 'Accept-Ranges', 'Content-Length'],
   })
 )
 
@@ -38,6 +42,8 @@ app.get('/health', (_req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes)
+app.use('/api/videos', videoRoutes)
+app.use('/api/users', userRoutes)
 
 // 404
 app.use((_req, res) => {
