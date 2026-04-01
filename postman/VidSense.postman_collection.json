@@ -1,0 +1,510 @@
+{
+  "info": {
+    "_postman_id": "vidsense-collection",
+    "name": "VidSense API",
+    "description": "Complete API collection for VidSense — video upload, sensitivity analysis, and streaming platform.\n\n**Base URL:** `{{base_url}}`\n\n**Demo Credentials:**\n- Admin: koushikpanda@gmail.com / Panda@1111111\n- Editor: johndoe@gmail.com / Panda@1111111\n- Viewer: koushik@gmail.com / Panda@1111111\n\n**How to use:**\n1. Select the `VidSense Environment`\n2. Run `Login as Admin` (or any role) — the access token is saved automatically\n3. All subsequent requests use `{{access_token}}` automatically",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the backend is running"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@gmail.com\",\n  \"password\": \"Panda@1111111\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Register a new user account"
+          }
+        },
+        {
+          "name": "Login as Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.environment.set('access_token', res.data.accessToken);",
+                  "  pm.environment.set('refresh_token', res.data.refreshToken);",
+                  "  pm.environment.set('user_id', res.data.user._id);",
+                  "  console.log('Token saved:', res.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Login as Admin — auto-saves access_token and refresh_token to environment"
+          }
+        },
+        {
+          "name": "Login as Editor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.environment.set('access_token', res.data.accessToken);",
+                  "  pm.environment.set('refresh_token', res.data.refreshToken);",
+                  "  pm.environment.set('user_id', res.data.user._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{editor_email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Login as Editor — auto-saves access_token and refresh_token to environment"
+          }
+        },
+        {
+          "name": "Login as Viewer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.environment.set('access_token', res.data.accessToken);",
+                  "  pm.environment.set('refresh_token', res.data.refreshToken);",
+                  "  pm.environment.set('user_id', res.data.user._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{viewer_email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Login as Viewer — auto-saves access_token and refresh_token to environment"
+          }
+        },
+        {
+          "name": "Get Current User (me)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Get the currently logged in user's profile"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update the current user's profile (name)"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "change-password"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Panda@1111111\",\n  \"newPassword\": \"Panda@1111111\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Change the current user's password"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.accessToken) {",
+                  "  pm.environment.set('access_token', res.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Get a new access token using the refresh token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout and invalidate the refresh token"
+          }
+        },
+        {
+          "name": "Google OAuth (open in browser)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/google",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "google"]
+            },
+            "description": "Open this URL in a browser to initiate Google OAuth login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Videos",
+      "item": [
+        {
+          "name": "Upload Video",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "  pm.environment.set('video_id', res.data._id);",
+                  "  console.log('Video ID saved:', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/videos/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos", "upload"]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "",
+                  "description": "Select a video file (mp4, mov, avi, mkv — max 100MB)"
+                },
+                {
+                  "key": "title",
+                  "value": "My Test Video",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "A test video uploaded via Postman",
+                  "type": "text"
+                }
+              ]
+            },
+            "description": "Upload a video file. Requires Editor or Admin role. Auto-saves video_id to environment.\n\n- Select a video file in the `video` field\n- Add title and description\n- The video will be queued for sensitivity analysis"
+          }
+        },
+        {
+          "name": "List All Videos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/videos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos"]
+            },
+            "description": "Get all videos for the current user"
+          }
+        },
+        {
+          "name": "List Videos - Filter by Status (safe)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/videos?status=safe",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos"],
+              "query": [{ "key": "status", "value": "safe" }]
+            },
+            "description": "Filter videos by sensitivity status: safe, flagged, pending, processing"
+          }
+        },
+        {
+          "name": "List Videos - Filter by Status (flagged)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/videos?status=flagged",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos"],
+              "query": [{ "key": "status", "value": "flagged" }]
+            }
+          }
+        },
+        {
+          "name": "List Videos - Search",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/videos?search=docker",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos"],
+              "query": [{ "key": "search", "value": "docker" }]
+            },
+            "description": "Search videos by title or description"
+          }
+        },
+        {
+          "name": "Get Video by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/videos/{{video_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos", "{{video_id}}"]
+            },
+            "description": "Get metadata for a specific video. Set video_id in environment."
+          }
+        },
+        {
+          "name": "Stream Video",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Range",
+                "value": "bytes=0-",
+                "description": "HTTP range request for streaming"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/videos/{{video_id}}/stream",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos", "{{video_id}}", "stream"]
+            },
+            "description": "Stream the video content. Supports HTTP range requests (206 Partial Content) for seek support."
+          }
+        },
+        {
+          "name": "Get Video Thumbnail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/videos/{{video_id}}/thumbnail",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos", "{{video_id}}", "thumbnail"]
+            },
+            "description": "Get the thumbnail image for a video"
+          }
+        },
+        {
+          "name": "Get Video Stats",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/videos/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos", "stats"]
+            },
+            "description": "Get summary stats: total videos, safe count, flagged count, pending count"
+          }
+        },
+        {
+          "name": "Update Video",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/videos/{{video_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos", "{{video_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Video Title\",\n  \"description\": \"Updated description\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update a video's title or description. Owner or Admin only."
+          }
+        },
+        {
+          "name": "Delete Video",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/videos/{{video_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "videos", "{{video_id}}"]
+            },
+            "description": "Delete a video and its file from storage. Owner or Admin only."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users (Admin Only)",
+      "item": [
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Get all registered users. Admin only."
+          }
+        },
+        {
+          "name": "Update User Role",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}/role",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}", "role"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"editor\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Update a user's role. Values: viewer, editor, admin. Admin only."
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "{{user_id}}"]
+            },
+            "description": "Delete a user account. Admin only."
+          }
+        }
+      ]
+    }
+  ]
+}
