@@ -6,6 +6,12 @@
 **Frontend:** [https://assignment.koushikpanda.online](https://assignment.koushikpanda.online)
 **Frontend Repo:** [assingment-frontend](https://github.com/KoushikPanda1729/assingment-frontend)
 
+## Documentation
+
+- [Architecture Overview](docs/ARCHITECTURE.md) — System design, data flow, CI/CD pipeline
+- [Assumptions & Design Decisions](docs/ASSUMPTIONS.md) — Why certain technical choices were made
+- [User Manual](docs/USER_MANUAL.md) — Step-by-step guide for all user roles
+
 ---
 
 ## Demo Credentials
