@@ -4,6 +4,7 @@ import { setAuthCookies, clearAuthCookies, getTokensFromCookies } from '../utils
 import { logger } from '../utils/logger'
 import type { AuthRequest } from '../types'
 
+// AuthController handles registration, login, token refresh, profile management and logout
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
